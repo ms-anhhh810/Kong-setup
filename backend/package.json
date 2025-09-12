@@ -1,0 +1,12 @@
+{
+  "name": "kong-test-backend",
+  "version": "1.0.0",
+  "description": "Simple backend for testing Kong JWT plugin",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

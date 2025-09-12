@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  kong:
+    build:
+      context: .
+      dockerfile: Dockerfile.kong
+    container_name: kong-test
+    ports:
+      - "8000:8000"  # Kong proxy port
+      - "8001:8001"  # Kong admin API port
+      - "8002:8002"  # Kong admin GUI port
+    environment:
+      - LANGSMITH_URL=${LANGSMITH_URL}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - BACKEND_SERVICE_URL=${BACKEND_SERVICE_URL}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - RATE_LIMIT_MINUTE=${RATE_LIMIT_MINUTE}
+      - RATE_LIMIT_HOUR=${RATE_LIMIT_HOUR}
+      - RATE_LIMIT_DAY=${RATE_LIMIT_DAY}
+      - GLOBAL_RATE_LIMIT_MINUTE=${GLOBAL_RATE_LIMIT_MINUTE}
+      - GLOBAL_RATE_LIMIT_HOUR=${GLOBAL_RATE_LIMIT_HOUR}
+      - MAX_PAYLOAD_SIZE=${MAX_PAYLOAD_SIZE}
+    env_file:
+      - .env
+    networks:
+      - kong-net
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: backend-test
+    ports:
+      - "8081:3000"
+    networks:
+      - kong-net
+
+networks:
+  kong-net:
+    driver: bridge

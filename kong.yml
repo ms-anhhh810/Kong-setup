@@ -1,0 +1,262 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: global-supervisor-service
+    url: ${LANGSMITH_URL}
+    host: api.smith.langchain.com
+    plugins:
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - "langsmith-api-key: ${LANGSMITH_API_KEY}"
+    routes:
+      - name: global-supervisor-routes
+        strip_path: false
+        paths:
+          - /threads
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        plugins:
+          - name: jwt
+            config:
+              secret_is_base64: false
+              claims_to_verify:
+                - exp
+              run_on_preflight: false
+          - name: jwt-header-injector
+            config:
+              inject_user_id: true
+              inject_user_email: true
+              inject_user_name: true
+              inject_user_language: true
+              inject_jwt_issuer: true
+              inject_app_name: true
+          - name: rate-limiting
+            config:
+              minute: 10
+              hour: 100
+              day: 1000
+              policy: local
+              hide_client_headers: false
+              limit_by: header
+              header_name: X-User-Id
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:3000"
+                - "http://localhost:3001"
+                - "http://127.0.0.1:3000"
+                - "http://127.0.0.1:3001"
+                - "*"
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - PATCH
+              credentials: true
+              max_age: 3600
+              preflight_continue: false
+
+  - name: ds-auth-service
+    url: ${BACKEND_SERVICE_URL}
+    host: backend
+    routes:
+      - name: auth-public-routes
+        strip_path: false
+        paths:
+          - /api/auth/login
+          - /api/auth/register
+          - /api/auth/forgot-password
+          - /api/auth/reset-password
+          - /api/auth/send-verification-email
+          - /api/auth/verify-email
+          - /api/auth/social/google
+          - /api/auth/social/facebook
+          - /api/auth/social/apple
+          - /api/auth/social/google/deauthorize
+          - /api/auth/social/facebook/deauthorize
+          - /api/auth/social/apple/deauthorize
+          - /api/auth/callback/google
+          - /api/auth/callback/facebook
+          - /api/auth/callback/apple
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+        plugins:
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:3000"
+                - "http://localhost:3001"
+                - "http://127.0.0.1:3000"
+                - "http://127.0.0.1:3001"
+                - "*"
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - PATCH
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - X-Auth-Token
+                - Authorization
+                - app
+                - user-agent
+              exposed_headers:
+                - X-Auth-Token
+              credentials: true
+              max_age: 3600
+              preflight_continue: false
+
+      - name: auth-protected-routes
+        strip_path: false
+        paths:
+            - /api/auth/account
+            - /api/auth/first-time-in-app
+            - /api/auth/uat
+            - /api/auth/platform
+            - /api/auth/sso
+            - /api/auth/profile
+            - /test-api
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+        plugins:
+          - name: jwt
+            config:
+              secret_is_base64: false
+              claims_to_verify:
+                - exp
+              run_on_preflight: false
+          - name: jwt-header-injector
+            config:
+              inject_user_id: true
+              inject_user_email: true
+              inject_user_name: true
+              inject_user_language: true
+              inject_jwt_issuer: true
+              inject_app_name: true
+          - name: rate-limiting
+            config:
+              minute: 10
+              hour: 100
+              day: 1000
+              policy: local
+              hide_client_headers: false
+              limit_by: header
+              header_name: X-User-Id
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:3000"
+                - "http://localhost:3001"
+                - "http://127.0.0.1:3000"
+                - "http://127.0.0.1:3001"
+                - "*"
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - PATCH
+                - OPTIONS
+              headers:
+                - Accept
+                - Accept-Version
+                - Content-Length
+                - Content-MD5
+                - Content-Type
+                - Date
+                - X-Auth-Token
+                - Authorization
+                - app
+                - user-agent
+              exposed_headers:
+                - X-Auth-Token
+              credentials: true
+              max_age: 3600
+              preflight_continue: false
+
+consumers:
+  - username: ds-auth-consumer
+    custom_id: ds-auth-consumer-id
+
+jwt_secrets:
+  - consumer: ds-auth-consumer
+    secret: "${JWT_SECRET}"
+    algorithm: HS256
+    key: "https://be.aliorders.io/api/auth/login"
+    rsa_public_key: null
+    tags:
+      - ds-auth
+      - jwt
+      - regular-login
+
+  - consumer: ds-auth-consumer
+    secret: "${JWT_SECRET}"
+    algorithm: HS256
+    key: "https://be.aliorders.io/api/auth/callback/facebook"
+    rsa_public_key: null
+    tags:
+      - ds-auth
+      - jwt
+      - facebook-login
+
+  - consumer: ds-auth-consumer
+    secret: "${JWT_SECRET}"
+    algorithm: HS256
+    key: "https://be.aliorders.io/api/auth/callback/google"
+    rsa_public_key: null
+    tags:
+      - ds-auth
+      - jwt
+      - google-login
+
+  - consumer: ds-auth-consumer
+    secret: "${JWT_SECRET}"
+    algorithm: HS256
+    key: "c"
+    rsa_public_key: null
+    tags:
+      - ds-auth
+      - jwt
+      - apple-login
+
+  - consumer: ds-auth-consumer
+    secret: "${JWT_SECRET}"
+    algorithm: HS256
+    key: "https://be.staging.alihunter.io/api/auth/callback/google"
+    rsa_public_key: null
+    tags:
+      - ds-auth
+      - jwt
+      - google-login-staging
+
+plugins:
+  - name: rate-limiting
+    config:
+      minute: 1000
+      hour: 10000
+      policy: local
+  - name: request-size-limiting
+    config:
+      allowed_payload_size: 50

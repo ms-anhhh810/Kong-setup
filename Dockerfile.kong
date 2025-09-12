@@ -1,0 +1,43 @@
+FROM kong:latest
+
+# Install envsubst as root
+USER root
+RUN apt-get update && apt-get install -y gettext-base && rm -rf /var/lib/apt/lists/*
+USER kong
+
+# Copy custom plugin
+COPY jwt-header-injector /usr/local/share/lua/5.1/kong/plugins/jwt-header-injector/
+
+# Set plugin as enabled
+ENV KONG_PLUGINS="bundled,jwt-header-injector"
+
+# Copy kong.yml template and entrypoint script
+COPY kong.yml /kong/kong.yml.template
+COPY entrypoint.sh /entrypoint.sh
+
+# Make entrypoint script executable as root
+USER root
+RUN chmod +x /entrypoint.sh
+USER kong
+
+# Set declarative config
+ENV KONG_DATABASE="off"
+ENV KONG_DECLARATIVE_CONFIG="/kong/kong.yml"
+
+# Set logging
+ENV KONG_PROXY_ACCESS_LOG="/dev/stdout"
+ENV KONG_ADMIN_ACCESS_LOG="/dev/stdout"
+ENV KONG_PROXY_ERROR_LOG="/dev/stderr"
+ENV KONG_ADMIN_ERROR_LOG="/dev/stderr"
+
+# Set admin API
+ENV KONG_ADMIN_LISTEN="0.0.0.0:8001, 0.0.0.0:8444 ssl"
+ENV KONG_ADMIN_GUI_URL="http://localhost:8002"
+ENV KONG_PORTAL_GUI_URL="http://localhost:8003"
+
+# Expose ports
+EXPOSE 8000 8001 8443 8444 8002
+
+# Use custom entrypoint as root
+USER root
+ENTRYPOINT ["/entrypoint.sh"]
