@@ -40,47 +40,49 @@ function JWTHeaderInjector:access(conf)
   
   kong.log.info("JWT Header Injector: JWT decoded successfully, claims found")
   
-  -- Inject headers based on JWT claims
-  if claims.sub then
-    kong.service.request.set_header("X-User-Id", claims.sub)
-    kong.log.info("JWT Header Injector: Injected X-User-Id: " .. claims.sub)
-  end
-  
   if claims.user then
-    if claims.user.id then
-      kong.service.request.set_header("X-User-DB-Id", tostring(claims.user.id))
-      kong.log.info("JWT Header Injector: Injected X-User-DB-Id: " .. tostring(claims.user.id))
-    end
-    
-    if claims.user.email then
-      kong.service.request.set_header("X-User-Email", claims.user.email)
-      kong.log.info("JWT Header Injector: Injected X-User-Email: " .. claims.user.email)
-    end
-    
-    if claims.user.first_name then
-      local full_name = claims.user.first_name
-      if claims.user.last_name and type(claims.user.last_name) == "string" and claims.user.last_name ~= "" then
-        full_name = full_name .. " " .. claims.user.last_name
+    -- User ID
+    if conf.inject_user_id then
+      if claims.user.id and claims.user.id ~= nil and type(claims.user.id) ~= "userdata" then
+        kong.service.request.set_header("X-User-Id", tostring(claims.user.id))
+        kong.log.info("JWT Header Injector: Injected X-User-Id: " .. tostring(claims.user.id))
+      else
+        kong.service.request.set_header("X-User-Id", "null")
+        kong.log.info("JWT Header Injector: Injected X-User-Id: null")
       end
-      kong.service.request.set_header("X-User-Name", full_name)
-      kong.log.info("JWT Header Injector: Injected X-User-Name: " .. full_name)
     end
     
-    if claims.user.language then
-      kong.service.request.set_header("X-User-Language", claims.user.language)
-      kong.log.info("JWT Header Injector: Injected X-User-Language: " .. claims.user.language)
+    -- First Name
+    if conf.inject_user_first_name then
+      if claims.user.first_name and claims.user.first_name ~= nil and type(claims.user.first_name) ~= "userdata" then
+        kong.service.request.set_header("X-User-First-Name", tostring(claims.user.first_name))
+        kong.log.info("JWT Header Injector: Injected X-User-First-Name: " .. tostring(claims.user.first_name))
+      else
+        kong.service.request.set_header("X-User-First-Name", "null")
+        kong.log.info("JWT Header Injector: Injected X-User-First-Name: null")
+      end
     end
-  end
-  
-  -- Inject additional useful headers
-  if claims.iss then
-    kong.service.request.set_header("X-JWT-Issuer", claims.iss)
-    kong.log.info("JWT Header Injector: Injected X-JWT-Issuer: " .. claims.iss)
-  end
-  
-  if claims.app then
-    kong.service.request.set_header("X-App-Name", claims.app)
-    kong.log.info("JWT Header Injector: Injected X-App-Name: " .. claims.app)
+    -- Last Name
+    if conf.inject_user_last_name then
+      if claims.user.last_name and claims.user.last_name ~= nil and type(claims.user.last_name) ~= "userdata" then
+        kong.service.request.set_header("X-User-Last-Name", tostring(claims.user.last_name))
+        kong.log.info("JWT Header Injector: Injected X-User-Last-Name: " .. tostring(claims.user.last_name))
+      else
+        kong.service.request.set_header("X-User-Last-Name", "null")
+        kong.log.info("JWT Header Injector: Injected X-User-Last-Name: null")
+      end
+    end
+    
+    -- Email
+    if conf.inject_user_email then
+      if claims.user.email and claims.user.email ~= nil and type(claims.user.email) ~= "userdata" then
+        kong.service.request.set_header("X-User-Email", tostring(claims.user.email))
+        kong.log.info("JWT Header Injector: Injected X-User-Email: " .. tostring(claims.user.email))
+      else
+        kong.service.request.set_header("X-User-Email", "null")
+        kong.log.info("JWT Header Injector: Injected X-User-Email: null")
+      end
+    end
   end
   
   kong.log.info("JWT Header Injector: Plugin execution completed successfully")

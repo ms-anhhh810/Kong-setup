@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Replace environment variables in kong.yml.template
-envsubst < /kong/kong.yml.template > /tmp/kong.yml
+# Replace environment variables in kong.yml
+envsubst < /kong/kong.yml > /tmp/kong.yml
 cp /tmp/kong.yml /kong/kong.yml
 chown kong:kong /kong/kong.yml
 

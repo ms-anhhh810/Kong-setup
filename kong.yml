@@ -11,6 +11,7 @@ services:
           add:
             headers:
               - "langsmith-api-key: ${LANGSMITH_API_KEY}"
+              - "Authorization: Bearer eydaonissssssss.uuuuuuuudnaowoavvvvvvvvvvvvvvvvwwidnvoaiwdvoaijdsvoasidoasidnivaoiwejoasindoagviweodiawwwwwwwwwwwwwwwwwdssssssssssddddddddddddddddddvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvviaaaaaaaaaaaaaaaaaaaaaaaahhhhhhhhhhhhhhhhhhhhhhhhwwwwwwwwwwwwwwwwwwwuuuuuuuuuuuuuuuuueeeeeeeeeeeeeennnnnnnnnnnnsssssssssssssssffffffffffffbbbbbbbbbbbbbbxxxxxxxxxxxxxxxxxsssssssssssssssssssaaaaaaaaaaaawwwwwwwwwwwwwwwwwqqqqqqqqqqqqqqqffffffffffffffggggggggggggggvvvvvvvvvvvvvvccccccccccccccccccxxxxxxxxxxxxxxxzzzzzzzzzzzzzzzzzzssssssssssssssssssseeeeefffffffffffdddssssffffffffseeeeuuuuuuuuuuuuuuuuuuuuuuuusadddddddddddddfgesdnniauwndiasndfggggauuuuuuuudasi.aiwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"
     routes:
       - name: global-supervisor-routes
         strip_path: false
@@ -31,11 +32,9 @@ services:
           - name: jwt-header-injector
             config:
               inject_user_id: true
+              inject_user_first_name: true
+              inject_user_last_name: true
               inject_user_email: true
-              inject_user_name: true
-              inject_user_language: true
-              inject_jwt_issuer: true
-              inject_app_name: true
           - name: rate-limiting
             config:
               minute: 10
@@ -65,7 +64,7 @@ services:
 
   - name: ds-auth-service
     url: ${BACKEND_SERVICE_URL}
-    host: backend
+    host: backend-test
     routes:
       - name: auth-public-routes
         strip_path: false
@@ -127,13 +126,13 @@ services:
       - name: auth-protected-routes
         strip_path: false
         paths:
-            - /api/auth/account
-            - /api/auth/first-time-in-app
-            - /api/auth/uat
-            - /api/auth/platform
-            - /api/auth/sso
-            - /api/auth/profile
-            - /test-api
+          - /api/auth/account
+          - /api/auth/first-time-in-app
+          - /api/auth/uat
+          - /api/auth/platform
+          - /api/auth/sso
+          - /api/auth/profile
+          - /test-api
         methods:
           - GET
           - POST
@@ -150,11 +149,9 @@ services:
           - name: jwt-header-injector
             config:
               inject_user_id: true
+              inject_user_first_name: true
+              inject_user_last_name: true
               inject_user_email: true
-              inject_user_name: true
-              inject_user_language: true
-              inject_jwt_issuer: true
-              inject_app_name: true
           - name: rate-limiting
             config:
               minute: 10
@@ -242,7 +239,7 @@ jwt_secrets:
       - apple-login
 
   - consumer: ds-auth-consumer
-    secret: "${JWT_SECRET}"
+    secret: "bP0QURePMkQEBrUDblJVZj7K2YwcapXBEUur4CPKzlagTPkULe0rzsVNa1gkXRo8"
     algorithm: HS256
     key: "https://be.staging.alihunter.io/api/auth/callback/google"
     rsa_public_key: null
@@ -260,3 +257,4 @@ plugins:
   - name: request-size-limiting
     config:
       allowed_payload_size: 50
+

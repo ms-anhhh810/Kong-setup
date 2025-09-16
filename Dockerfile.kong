@@ -3,22 +3,21 @@ FROM kong:latest
 # Install envsubst as root
 USER root
 RUN apt-get update && apt-get install -y gettext-base && rm -rf /var/lib/apt/lists/*
-USER kong
 
 # Copy custom plugin
 COPY jwt-header-injector /usr/local/share/lua/5.1/kong/plugins/jwt-header-injector/
 
+# Copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+USER kong
+
 # Set plugin as enabled
 ENV KONG_PLUGINS="bundled,jwt-header-injector"
 
-# Copy kong.yml template and entrypoint script
-COPY kong.yml /kong/kong.yml.template
-COPY entrypoint.sh /entrypoint.sh
-
-# Make entrypoint script executable as root
-USER root
-RUN chmod +x /entrypoint.sh
-USER kong
+# Copy kong.yml directly
+COPY kong.yml /kong/kong.yml
 
 # Set declarative config
 ENV KONG_DATABASE="off"
